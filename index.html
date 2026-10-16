@@ -509,6 +509,51 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
     }
+
+    /* ================= ACCESSIBILITY UTILITY ================= */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* ================= HERO NETWORK BACKGROUND ================= */
+    #hero { isolation: isolate; }
+    #hero-network {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+    #hero > .container { position: relative; z-index: 1; }
+
+    /* ================= TYPEWRITER HEADLINE ================= */
+    #hero h1 .typewriter-cursor {
+      display: inline-block;
+      width: 3px;
+      height: 0.9em;
+      margin-left: 2px;
+      vertical-align: -0.12em;
+      background: currentColor;
+      color: var(--blue);
+      animation: blink-cursor 0.9s step-end infinite;
+    }
+    @keyframes blink-cursor {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #hero h1 .typewriter-cursor { animation: none; opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -532,9 +577,13 @@
 
   <!-- ================= HERO ================= -->
   <header id="hero">
+    <canvas id="hero-network" aria-hidden="true"></canvas>
     <div class="container center">
       <p><em>AI-first project management</em></p>
-      <h1>Stop managing projects. Start moving them forward.</h1>
+      <h1>
+        <span class="sr-only">Stop managing projects. Start moving them forward.</span>
+        <span class="typewriter" aria-hidden="true" data-text="Stop managing projects. Start moving them forward."><span class="typewriter-text"></span><span class="typewriter-cursor"></span></span>
+      </h1>
       <p>
         FlowAI turns big goals into clear plans, automates the busywork, and warns you about
         delays before they happen, so your team spends less time coordinating and more time delivering.
@@ -684,9 +733,9 @@
       <h2 class="center">Teams are delivering faster with FlowAI</h2>
 
       <div class="grid center" style="margin-bottom: 32px;">
-        <div><strong>[X]%</strong><br>less time spent on planning</div>
-        <div><strong>[X] hrs</strong><br>saved per manager each week</div>
-        <div><strong>[X]%</strong><br>more projects delivered on time</div>
+        <div><strong class="stat-counter" data-target="40" data-suffix="%">0%</strong><br>less time spent on planning</div>
+        <div><strong class="stat-counter" data-target="5000" data-suffix="+">0+</strong><br>teams running projects on FlowAI</div>
+        <div><strong class="stat-counter" data-target="3" data-suffix="x">0x</strong><br>more projects delivered on time</div>
       </div>
 
       <div class="grid">
@@ -826,6 +875,227 @@
       <p class="center"><small>&copy; 2026 FlowAI. All rights reserved.</small></p>
     </div>
   </footer>
+
+  <script>
+    (function () {
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      /* ================= HERO AI NETWORK BACKGROUND ================= */
+      function initNetwork() {
+        var canvas = document.getElementById('hero-network');
+        if (!canvas || !canvas.getContext) return;
+        var ctx = canvas.getContext('2d');
+        var hero = canvas.parentElement;
+        var width, height, dpr;
+        var nodes = [];
+        var nodeCount;
+        var rafId = null;
+
+        function resize() {
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          width = hero.offsetWidth;
+          height = hero.offsetHeight;
+          canvas.width = width * dpr;
+          canvas.height = height * dpr;
+          canvas.style.width = width + 'px';
+          canvas.style.height = height + 'px';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function createNodes() {
+          nodeCount = Math.max(18, Math.min(42, Math.round((width * height) / 26000)));
+          nodes = [];
+          for (var i = 0; i < nodeCount; i++) {
+            nodes.push({
+              x: Math.random() * width,
+              y: Math.random() * height,
+              vx: (Math.random() - 0.5) * 0.18,
+              vy: (Math.random() - 0.5) * 0.18,
+              r: 1.6 + Math.random() * 1.8,
+              pulse: 0,
+              nextPulseAt: Math.random() * 6000 + 2000
+            });
+          }
+        }
+
+        function drawStatic() {
+          ctx.clearRect(0, 0, width, height);
+          ctx.strokeStyle = 'rgba(59, 130, 246, 0.18)';
+          ctx.fillStyle = 'rgba(34, 197, 94, 0.5)';
+          for (var i = 0; i < nodes.length; i++) {
+            ctx.beginPath();
+            ctx.arc(nodes[i].x, nodes[i].y, nodes[i].r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        var maxLinkDist = 150;
+        var lastTime = performance.now();
+
+        function step(now) {
+          var dt = Math.min(now - lastTime, 50);
+          lastTime = now;
+
+          for (var i = 0; i < nodes.length; i++) {
+            var n = nodes[i];
+            n.x += n.vx * (dt / 16);
+            n.y += n.vy * (dt / 16);
+
+            if (n.x < 0 || n.x > width) n.vx *= -1;
+            if (n.y < 0 || n.y > height) n.vy *= -1;
+            n.x = Math.max(0, Math.min(width, n.x));
+            n.y = Math.max(0, Math.min(height, n.y));
+
+            n.nextPulseAt -= dt;
+            if (n.nextPulseAt <= 0 && n.pulse <= 0) {
+              n.pulse = 1;
+              n.nextPulseAt = Math.random() * 7000 + 4000;
+            }
+            if (n.pulse > 0) {
+              n.pulse -= dt / 900;
+              if (n.pulse < 0) n.pulse = 0;
+            }
+          }
+
+          ctx.clearRect(0, 0, width, height);
+
+          for (var a = 0; a < nodes.length; a++) {
+            for (var b = a + 1; b < nodes.length; b++) {
+              var dx = nodes[a].x - nodes[b].x;
+              var dy = nodes[a].y - nodes[b].y;
+              var dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < maxLinkDist) {
+                var alpha = (1 - dist / maxLinkDist) * 0.22;
+                ctx.strokeStyle = 'rgba(59, 130, 246, ' + alpha + ')';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(nodes[a].x, nodes[a].y);
+                ctx.lineTo(nodes[b].x, nodes[b].y);
+                ctx.stroke();
+              }
+            }
+          }
+
+          for (var i2 = 0; i2 < nodes.length; i2++) {
+            var node = nodes[i2];
+            var pulseScale = 1 + node.pulse * 2.2;
+            var pulseAlpha = node.pulse * 0.35;
+
+            if (node.pulse > 0) {
+              ctx.beginPath();
+              ctx.arc(node.x, node.y, node.r * pulseScale * 2.2, 0, Math.PI * 2);
+              ctx.fillStyle = 'rgba(34, 197, 94, ' + pulseAlpha + ')';
+              ctx.fill();
+            }
+
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(34, 197, 94, ' + (0.55 + node.pulse * 0.4) + ')';
+            ctx.fill();
+          }
+
+          rafId = requestAnimationFrame(step);
+        }
+
+        resize();
+        createNodes();
+
+        if (reduceMotion) {
+          drawStatic();
+        } else {
+          lastTime = performance.now();
+          rafId = requestAnimationFrame(step);
+        }
+
+        var resizeTimeout;
+        window.addEventListener('resize', function () {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(function () {
+            resize();
+            createNodes();
+            if (reduceMotion) drawStatic();
+          }, 150);
+        });
+      }
+
+      /* ================= TYPEWRITER HEADLINE ================= */
+      function initTypewriter() {
+        var wrap = document.querySelector('#hero .typewriter');
+        if (!wrap) return;
+        var textEl = wrap.querySelector('.typewriter-text');
+        var fullText = wrap.getAttribute('data-text') || '';
+
+        if (reduceMotion) {
+          textEl.textContent = fullText;
+          return;
+        }
+
+        var i = 0;
+        function typeNext() {
+          if (i <= fullText.length) {
+            textEl.textContent = fullText.slice(0, i);
+            i++;
+            var delay = 28 + Math.random() * 35;
+            setTimeout(typeNext, delay);
+          }
+        }
+        setTimeout(typeNext, 300);
+      }
+
+      /* ================= COUNT-UP STATS ================= */
+      function initCounters() {
+        var counters = document.querySelectorAll('.stat-counter');
+        if (!counters.length) return;
+
+        function animateCounter(el) {
+          var target = parseFloat(el.getAttribute('data-target'), 10) || 0;
+          var suffix = el.getAttribute('data-suffix') || '';
+
+          if (reduceMotion) {
+            el.textContent = target.toLocaleString() + suffix;
+            return;
+          }
+
+          var duration = 1600;
+          var start = null;
+
+          function frame(timestamp) {
+            if (start === null) start = timestamp;
+            var progress = Math.min((timestamp - start) / duration, 1);
+            var eased = 1 - Math.pow(1 - progress, 3);
+            var current = Math.round(eased * target);
+            el.textContent = current.toLocaleString() + suffix;
+            if (progress < 1) {
+              requestAnimationFrame(frame);
+            }
+          }
+          requestAnimationFrame(frame);
+        }
+
+        if (!('IntersectionObserver' in window)) {
+          counters.forEach(animateCounter);
+          return;
+        }
+
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              animateCounter(entry.target);
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.4 });
+
+        counters.forEach(function (el) { observer.observe(el); });
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        initNetwork();
+        initTypewriter();
+        initCounters();
+      });
+    })();
+  </script>
 
 </body>
 </html>
