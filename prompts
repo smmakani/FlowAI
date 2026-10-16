@@ -19,3 +19,45 @@ The UI elements should have -
 - glassmorphism cards for sections
 - gradient accent buttons
 - smooth hover transitions
+
+
+Prompt 3: WEBSITE SPACING, PADDING AND MARGIN
+Refine the styling to follow a consistent design system. Define a clear typographic scale. use one font size for main headings, one for subheadings, one for body text, and one for small labels. Use a consistent spacing scale across all sections so that the padding and margins feel balanced and even. Standardize the buttons so that they follow the same style. Make sure the color palette is consistent. The page should feel like every section was designed by the same hand. 
+
+Prompt 4: 
+Now we will add javascript animations to our site. The following needs to be implemented
+Hero section -
+ Should have a Floating AI Network Background
+ Behind the hero card I want
+ • moving nodes + connecting lines
+ • slow drifting motion
+ • nodes occasionally pulse
+Add typewriter effect with blinking cursor for the headline.
+Also for social proof sections the numbers at bottom instead of static they can count up .. from
+0 → 40%
+ 0 → 3x
+ 0 → 5000+
+
+Prompt 5: 
+Ok i need following changes.
+1.	hero section nodes- They should be bigger and darker in color. And also should move faster.
+2.	features section- staggered card reveal is not implemented. Now all the cards appear at once.. i want them to appear one by one, with 1s duration
+Make the primary CTA button pulse every 5 second
+3. As we scroll through the sections while scrolling down, the sections should fade in and slide upward slightly
+4. In feature section, I want a staggard card reveal
+instead of all cards appearing at once, do cascade animation -- Card1 --> Card2 ---> Card3
+
+Prompt 6: 
+Generate a logo for flowAI. Its an AI powered project management software. Make it minimalistic and colorful. It should have blue and green colors.
+
+Prompt 7: 
+Make it double in size
+
+Prompt 8:
+Make the website fully responsive for mobile and tablet screens.
+
+Prompt 9: 
+Review the entire HTML file and optimize it for performance and code quality. Remove any unused CSS. Make sure all JavaScript is deferred so it does not block page load. Clean up any redundant code.
+ Add proper meta tags for SEO
+Add an Open Graph title and description so the page looks good when shared on social media.
+
