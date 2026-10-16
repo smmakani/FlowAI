@@ -14,6 +14,8 @@
     :root {
       --green: #22c55e;
       --blue: #3b82f6;
+      --green-dark: #14532d;
+      --blue-dark: #1e3a8a;
       --gradient: linear-gradient(135deg, var(--green) 0%, var(--blue) 100%);
       --gradient-soft: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(59, 130, 246, 0.12));
 
@@ -55,19 +57,24 @@
     }
 
     /* Decorative ambient glows */
+    @keyframes glowDrift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(70px, 50px) scale(1.18); }
+    }
     body::before, body::after {
       content: "";
       position: fixed;
       z-index: -1;
-      width: 620px;
-      height: 620px;
+      width: 860px;
+      height: 860px;
       border-radius: 50%;
       filter: blur(120px);
-      opacity: 0.28;
+      opacity: 0.48;
       pointer-events: none;
+      animation: glowDrift 6s ease-in-out infinite;
     }
-    body::before { background: var(--green); top: -200px; left: -180px; }
-    body::after { background: var(--blue); bottom: -220px; right: -180px; }
+    body::before { background: var(--green-dark); top: -260px; left: -220px; }
+    body::after { background: var(--blue-dark); bottom: -280px; right: -220px; animation-delay: -3s; }
 
     h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -0.02em; margin: 0 0 0.5em; }
     h1 { font-size: clamp(2.4rem, 5.5vw, 4rem); font-weight: 800; letter-spacing: -0.035em; }
