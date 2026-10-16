@@ -1,0 +1,21 @@
+BUILDING  A WEBSITE FLOWAI
+Prompt 1: WEBSITE STRUCTURE
+Create an HTML website for a product called FlowAI. It is an AI powered project management tool. for now I only want a good structure. We will bring in good design elements later. You can refer to this document @flow_ai_product_overview.docx  placed in this folder to get an idea about the product.While building ensure that these section are included - A hero section, a features section, how it works section, social proof with testimonials, a call to action and footer section.There need not be any styling beyond basic layout. I first want to see if my website is conveying the story of my product well.
+
+Prompt 2: WEBSITE DESIGN STYLING 
+Apply a complete modern visual design to this website while keeping the structure and content unchanged. 
+User a premium glassmorphism style UI. Elements such as cards, panels, and sections should have that effect
+User a minimal neutral base with subtle gradient accents
+Primary accent gradient should blend:
+green(#22c55e) and blue (#3b82f6)
+These gradients should appear in: 
+- highlights
+- buttons
+- hover states
+- decorative glows
+
+The UI elements should have -
+- soft shadows
+- glassmorphism cards for sections
+- gradient accent buttons
+- smooth hover transitions

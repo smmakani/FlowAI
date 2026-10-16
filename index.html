@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowAI – AI-Powered Project Management</title>
+  <meta name="description" content="FlowAI is an AI-first project management platform that plans, automates, and predicts so your team can deliver faster.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ================= DESIGN TOKENS ================= */
+    :root {
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --gradient: linear-gradient(135deg, var(--green) 0%, var(--blue) 100%);
+      --gradient-soft: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(59, 130, 246, 0.12));
+
+      --bg: #f5f6f8;
+      --text: #0f172a;
+      --text-muted: #5b6475;
+      --border: rgba(15, 23, 42, 0.08);
+
+      --glass: rgba(255, 255, 255, 0.55);
+      --glass-strong: rgba(255, 255, 255, 0.72);
+      --glass-border: rgba(255, 255, 255, 0.75);
+      --blur: blur(18px) saturate(160%);
+
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 2px 4px rgba(15, 23, 42, 0.04), 0 12px 32px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 4px 8px rgba(15, 23, 42, 0.05), 0 24px 56px rgba(15, 23, 42, 0.12);
+      --shadow-glow: 0 10px 30px rgba(34, 197, 94, 0.25), 0 10px 30px rgba(59, 130, 246, 0.25);
+
+      --radius-sm: 12px;
+      --radius: 20px;
+      --radius-lg: 28px;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --speed: 0.35s;
+    }
+
+    /* ================= BASE ================= */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; color-scheme: light; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Decorative ambient glows */
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      z-index: -1;
+      width: 620px;
+      height: 620px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.28;
+      pointer-events: none;
+    }
+    body::before { background: var(--green); top: -200px; left: -180px; }
+    body::after { background: var(--blue); bottom: -220px; right: -180px; }
+
+    h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -0.02em; margin: 0 0 0.5em; }
+    h1 { font-size: clamp(2.4rem, 5.5vw, 4rem); font-weight: 800; letter-spacing: -0.035em; }
+    h2 { font-size: clamp(1.75rem, 3.5vw, 2.5rem); font-weight: 700; }
+    h3 { font-size: 1.2rem; font-weight: 600; }
+    h4 { font-size: 1.05rem; font-weight: 600; }
+    p { margin: 0 0 1em; color: var(--text-muted); }
+    a { color: var(--text); text-decoration: none; transition: color var(--speed) var(--ease); }
+    a:hover { color: var(--blue); }
+    :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 6px; }
+
+    /* ================= LAYOUT ================= */
+    header, section, footer { padding: 40px 16px; scroll-margin-top: 96px; }
+    .container { max-width: 1140px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px; }
+    .center { text-align: center; }
+    .center > p { max-width: 680px; margin-left: auto; margin-right: auto; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .center .actions { justify-content: center; }
+
+    /* Sections as glass panels */
+    section > .container, footer > .container {
+      background: var(--glass);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: clamp(32px, 5vw, 64px) clamp(20px, 5vw, 56px);
+      position: relative;
+    }
+    section > .container > h2:first-child { margin-bottom: 0.4em; }
+
+    /* ================= GLASS CARD ================= */
+    .card {
+      position: relative;
+      background: var(--glass-strong);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 28px;
+      margin: 0;
+      transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+    }
+    /* Gradient border revealed on hover */
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1.5px;
+      background: var(--gradient);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity var(--speed) var(--ease);
+      pointer-events: none;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .card:hover::before { opacity: 1; }
+    .card h3, .card h4 { color: var(--text); }
+    .card p:last-child { margin-bottom: 0; }
+
+    /* ================= BUTTONS ================= */
+    button, .btn {
+      font: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 28px;
+      color: #fff;
+      background: var(--gradient);
+      background-size: 150% 150%;
+      background-position: 0% 50%;
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.25);
+      transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease), background-position 0.6s var(--ease);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow);
+      background-position: 100% 50%;
+    }
+    button:active { transform: translateY(0); }
+
+    /* Secondary (glass) button: second hero action */
+    #hero .actions a + a button {
+      color: var(--text);
+      background: var(--glass-strong);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    #hero .actions a + a button:hover { box-shadow: var(--shadow-md); border-color: rgba(59, 130, 246, 0.35); }
+
+    /* Link-styled buttons (nav + pricing) */
+    nav .actions a:last-child,
+    #pricing .card > a {
+      display: inline-block;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #fff;
+      background: var(--gradient);
+      border-radius: 999px;
+      padding: 10px 22px;
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.22);
+      transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+    }
+    nav .actions a:last-child:hover,
+    #pricing .card > a:hover { color: #fff; transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+
+    /* Gradient text utility applied to highlights */
+    .gradient-text,
+    #hero > .container > p:first-child em,
+    #features h3,
+    #testimonials h2 + .grid strong,
+    #pricing .card > p strong {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    /* ================= NAVIGATION ================= */
+    nav { position: sticky; top: 12px; z-index: 100; padding: 0 16px; }
+    nav .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 12px;
+      padding: 12px 16px 12px 24px;
+      background: var(--glass-strong);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      box-shadow: var(--shadow-md);
+    }
+    nav > .container > a strong {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    nav ul { list-style: none; display: flex; gap: 6px; margin: 0; padding: 0; flex-wrap: wrap; }
+    nav ul a {
+      display: block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.93rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color var(--speed) var(--ease), background var(--speed) var(--ease);
+    }
+    nav ul a:hover { color: var(--text); background: var(--gradient-soft); }
+    nav .actions a:first-child { font-weight: 500; font-size: 0.93rem; padding: 8px 10px; }
+
+    /* ================= HERO ================= */
+    #hero { padding-top: clamp(64px, 10vw, 120px); padding-bottom: 56px; position: relative; }
+    #hero::before {
+      content: "";
+      position: absolute;
+      top: 40px;
+      left: 50%;
+      width: min(720px, 90vw);
+      height: 360px;
+      transform: translateX(-50%);
+      background: var(--gradient);
+      filter: blur(140px);
+      opacity: 0.18;
+      z-index: -1;
+      pointer-events: none;
+    }
+    #hero > .container > p:first-child {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 999px;
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    #hero > .container > p:first-child em { font-style: normal; }
+    #hero h1 { max-width: 900px; margin: 0 auto 0.4em; }
+    #hero > .container > p:nth-of-type(2) { font-size: 1.15rem; max-width: 640px; }
+    #hero .actions { margin: 32px 0 16px; }
+    #hero small { color: var(--text-muted); }
+    #hero .card {
+      margin-top: 56px !important;
+      min-height: 360px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-weight: 500;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg), 0 0 80px rgba(34, 197, 94, 0.12), 0 0 80px rgba(59, 130, 246, 0.12);
+      background:
+        linear-gradient(var(--glass-strong), var(--glass-strong)),
+        var(--gradient-soft);
+    }
+    #hero .card:hover { transform: none; }
+
+    /* ================= PROBLEM ================= */
+    #problem > .container > p { font-size: 1.1rem; margin-bottom: 0; }
+
+    /* ================= FEATURES ================= */
+    #features h3 {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin: 48px 0 18px;
+    }
+    #features h3 + .grid .card h4::before {
+      content: "";
+      display: block;
+      width: 40px;
+      height: 40px;
+      margin-bottom: 16px;
+      border-radius: var(--radius-sm);
+      background: var(--gradient);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.25);
+      opacity: 0.9;
+    }
+
+    /* ================= HOW IT WORKS ================= */
+    ol.steps {
+      list-style: none;
+      counter-reset: step;
+      padding: 0;
+      margin: 40px 0 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 24px;
+    }
+    ol.steps li {
+      counter-increment: step;
+      position: relative;
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 28px;
+      transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+    }
+    ol.steps li:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    ol.steps li::before {
+      content: counter(step, decimal-leading-zero);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      margin-bottom: 16px;
+      border-radius: 50%;
+      background: var(--gradient);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: var(--shadow-glow);
+    }
+    ol.steps li p { margin-bottom: 0; }
+
+    /* ================= BENEFITS ================= */
+    #benefits .grid { margin-top: 32px; }
+    #benefits ul.grid { margin-top: 20px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+    #benefits ul.grid li {
+      padding: 14px 18px;
+      border-radius: 999px;
+      background: var(--glass-strong);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-sm);
+      font-weight: 500;
+      font-size: 0.93rem;
+      transition: background var(--speed) var(--ease), transform var(--speed) var(--ease);
+    }
+    #benefits ul.grid li:hover { background: var(--gradient-soft); transform: translateY(-2px); }
+
+    /* ================= TESTIMONIALS ================= */
+    #testimonials h2 + .grid { margin-top: 40px; }
+    #testimonials h2 + .grid > div { color: var(--text-muted); font-size: 0.95rem; }
+    #testimonials h2 + .grid strong {
+      display: inline-block;
+      font-size: clamp(2.2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    #testimonials figure.card { display: flex; flex-direction: column; justify-content: space-between; }
+    #testimonials blockquote { margin: 0; position: relative; }
+    #testimonials blockquote::before {
+      content: "\201C";
+      display: block;
+      font-size: 3.5rem;
+      line-height: 1;
+      height: 32px;
+      font-weight: 800;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    #testimonials blockquote p { color: var(--text); font-size: 1.02rem; }
+    #testimonials figcaption { font-size: 0.88rem; font-weight: 600; color: var(--text-muted); margin-top: 16px; }
+    #testimonials > .container > p.center { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; }
+    #testimonials .grid:last-child { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; }
+    #testimonials .grid:last-child .card { padding: 20px; color: var(--text-muted); font-weight: 600; }
+
+    /* ================= PRICING ================= */
+    #pricing .grid { margin-top: 40px; align-items: stretch; }
+    #pricing .card { display: flex; flex-direction: column; padding: 32px; }
+    #pricing .card > p strong { font-size: 2.6rem; font-weight: 800; letter-spacing: -0.03em; }
+    #pricing .card ul { list-style: none; padding: 0; margin: 8px 0 28px; flex-grow: 1; }
+    #pricing .card li { position: relative; padding: 6px 0 6px 28px; color: var(--text-muted); font-size: 0.95rem; }
+    #pricing .card li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--gradient);
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6.5 11.2 3.3 8l1.1-1.1 2.1 2.1 5-5L12.7 5z'/%3E%3C/svg%3E") center / contain no-repeat;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6.5 11.2 3.3 8l1.1-1.1 2.1 2.1 5-5L12.7 5z'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+    #pricing .card > a { text-align: center; align-self: stretch; padding: 12px 22px; }
+    /* Highlighted "Most popular" plan */
+    #pricing .card:nth-child(2) { box-shadow: var(--shadow-lg), 0 0 60px rgba(59, 130, 246, 0.15); }
+    #pricing .card:nth-child(2)::before { opacity: 1; }
+    #pricing .card:nth-child(2) > p:first-child {
+      align-self: flex-start;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: var(--gradient);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    #pricing .card:nth-child(2) > p:first-child em { font-style: normal; }
+    /* Secondary "Contact Sales" button */
+    #pricing .card:last-child > a {
+      color: var(--text);
+      background: var(--glass-strong);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    #pricing .card:last-child > a:hover { color: var(--text); border-color: rgba(59, 130, 246, 0.35); box-shadow: var(--shadow-md); }
+
+    /* ================= CTA ================= */
+    #cta > .container { overflow: hidden; padding-top: clamp(48px, 7vw, 88px); padding-bottom: clamp(48px, 7vw, 88px); }
+    #cta > .container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--gradient);
+      opacity: 0.1;
+      pointer-events: none;
+    }
+    #cta > .container::after {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gradient);
+      filter: blur(100px);
+      opacity: 0.25;
+      pointer-events: none;
+    }
+    #cta > .container > * { position: relative; z-index: 1; }
+    #cta form { margin: 32px auto 16px; max-width: 520px; flex-wrap: nowrap; }
+    #cta input {
+      flex: 1;
+      min-width: 0;
+      font: inherit;
+      font-size: 0.95rem;
+      padding: 14px 22px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--glass-strong);
+      color: var(--text);
+      box-shadow: var(--shadow-sm);
+      transition: border-color var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+    }
+    #cta input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); }
+    #cta small { color: var(--text-muted); }
+    #cta p a { font-weight: 600; color: var(--blue); }
+    #cta p a:hover { color: var(--green); }
+
+    /* ================= FOOTER ================= */
+    footer { padding-bottom: 32px; }
+    footer .grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+    footer .grid > div:first-child strong {
+      font-size: 1.3rem;
+      font-weight: 800;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    footer .grid > div:first-child p { margin-top: 8px; font-size: 0.93rem; }
+    footer h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text); }
+    footer ul { list-style: none; padding: 0; margin: 0; }
+    footer li { margin-bottom: 8px; }
+    footer ul a { color: var(--text-muted); font-size: 0.93rem; }
+    footer ul a:hover { color: var(--blue); }
+    footer > .container > p.center {
+      margin: 40px 0 0;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 760px) {
+      nav .container { border-radius: var(--radius); justify-content: center; padding: 12px 16px; }
+      nav ul { justify-content: center; }
+      #cta form { flex-wrap: wrap; }
+      #cta form > * { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= NAVIGATION ================= -->
+  <nav aria-label="Main">
+    <div class="container">
+      <a href="#"><strong>FlowAI</strong></a>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#testimonials">Customers</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+      <div class="actions">
+        <a href="#">Log in</a>
+        <a href="#cta">Start Free Trial</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ================= HERO ================= -->
+  <header id="hero">
+    <div class="container center">
+      <p><em>AI-first project management</em></p>
+      <h1>Stop managing projects. Start moving them forward.</h1>
+      <p>
+        FlowAI turns big goals into clear plans, automates the busywork, and warns you about
+        delays before they happen, so your team spends less time coordinating and more time delivering.
+      </p>
+      <div class="actions">
+        <a href="#cta"><button type="button">Start Free Trial</button></a>
+        <a href="#how-it-works"><button type="button">See How It Works</button></a>
+      </div>
+      <p><small>No credit card required · Connects with Slack, Google Workspace, GitHub &amp; Notion</small></p>
+
+      <!-- Placeholder for product screenshot / dashboard visual -->
+      <div class="card" style="margin-top: 32px; min-height: 240px;">
+        [Product screenshot: Real-time project dashboard]
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= PROBLEM ================= -->
+  <section id="problem">
+    <div class="container center">
+      <h2>Project management shouldn't be a second full-time job</h2>
+      <p>
+        Status meetings, chasing updates, rewriting plans, building reports by hand.
+        Most teams lose hours every week just keeping projects organised, and still find out about
+        risks too late.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= FEATURES ================= -->
+  <section id="features">
+    <div class="container">
+      <h2 class="center">Everything your team needs, with AI built in from day one</h2>
+      <p class="center">AI isn't an add-on in FlowAI. It's the foundation every feature is built on.</p>
+
+      <h3>Plan</h3>
+      <div class="grid">
+        <article class="card">
+          <h4>AI Task Planner</h4>
+          <p>Describe a goal and FlowAI breaks it into structured tasks and milestones automatically.</p>
+        </article>
+        <article class="card">
+          <h4>Resource Allocation Intelligence</h4>
+          <p>Get AI suggestions for who should own each task based on skills and availability.</p>
+        </article>
+        <article class="card">
+          <h4>Timelines &amp; Kanban Boards</h4>
+          <p>Visualise work your way with timelines, sprint boards, and task flows.</p>
+        </article>
+      </div>
+
+      <h3>Automate</h3>
+      <div class="grid">
+        <article class="card">
+          <h4>Smart Workflow Automation</h4>
+          <p>Hand off approvals, reminders, and status updates to FlowAI.</p>
+        </article>
+        <article class="card">
+          <h4>Meeting-to-Task Extractor</h4>
+          <p>Paste in meeting notes and get action items, assigned and scheduled.</p>
+        </article>
+        <article class="card">
+          <h4>Automated Reporting</h4>
+          <p>Weekly status reports and executive summaries, written for you.</p>
+        </article>
+      </div>
+
+      <h3>Predict &amp; Track</h3>
+      <div class="grid">
+        <article class="card">
+          <h4>AI Project Insights</h4>
+          <p>Predictive analytics flag delays, risks, and bottlenecks before they derail delivery.</p>
+        </article>
+        <article class="card">
+          <h4>Real-Time Progress Dashboard</h4>
+          <p>A live view of project health, milestones, and productivity, across every project.</p>
+        </article>
+      </div>
+
+      <h3>Collaborate &amp; Connect</h3>
+      <div class="grid">
+        <article class="card">
+          <h4>Team Collaboration Hub</h4>
+          <p>Shared notes, discussions, and files in one place. No more hunting across tools.</p>
+        </article>
+        <article class="card">
+          <h4>Integration Ecosystem</h4>
+          <p>Works with Slack, Google Workspace, GitHub, Notion, and your CRM.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section id="how-it-works">
+    <div class="container">
+      <h2 class="center">From goal to delivered in four steps</h2>
+      <ol class="steps">
+        <li>
+          <h3>Connect your tools</h3>
+          <p>Link Slack, Google Workspace, GitHub, Notion, or your CRM in a few clicks. FlowAI fits into how your team already works.</p>
+        </li>
+        <li>
+          <h3>Describe your goal</h3>
+          <p>Tell FlowAI what you want to achieve. The AI Task Planner creates the tasks and milestones, and suggests who should own each one.</p>
+        </li>
+        <li>
+          <h3>Let automation run the routine</h3>
+          <p>Approvals, reminders, status updates, and meeting action items are handled automatically while your team focuses on the work.</p>
+        </li>
+        <li>
+          <h3>Stay ahead with AI insights</h3>
+          <p>Track progress live on your dashboard, get early warnings on risks, and receive auto-generated reports for stakeholders.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================= BENEFITS / WHO IT'S FOR ================= -->
+  <section id="benefits">
+    <div class="container">
+      <h2 class="center">Why teams choose FlowAI</h2>
+      <div class="grid">
+        <div class="card"><h3>Faster delivery</h3><p>Less time planning, more time executing.</p></div>
+        <div class="card"><h3>Less admin work</h3><p>Automation removes repetitive project management tasks.</p></div>
+        <div class="card"><h3>Better coordination</h3><p>Centralised communication means less confusion.</p></div>
+        <div class="card"><h3>Full visibility</h3><p>Leadership sees progress across projects in real time.</p></div>
+        <div class="card"><h3>Data-driven decisions</h3><p>Spot risks early with predictive insights.</p></div>
+        <div class="card"><h3>Scales with you</h3><p>Built for startups, growing teams, and large organisations.</p></div>
+      </div>
+
+      <h3 class="center" style="margin-top: 40px;">Built for</h3>
+      <ul class="grid" style="list-style: none; padding: 0; text-align: center;">
+        <li>Startups &amp; product teams</li>
+        <li>Software development companies</li>
+        <li>Marketing &amp; creative agencies</li>
+        <li>Consulting &amp; professional services</li>
+        <li>Enterprises with many internal projects</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= SOCIAL PROOF / TESTIMONIALS ================= -->
+  <!-- NOTE: Testimonials and logos below are placeholders. Replace with real customer quotes before launch. -->
+  <section id="testimonials">
+    <div class="container">
+      <h2 class="center">Teams are delivering faster with FlowAI</h2>
+
+      <div class="grid center" style="margin-bottom: 32px;">
+        <div><strong>[X]%</strong><br>less time spent on planning</div>
+        <div><strong>[X] hrs</strong><br>saved per manager each week</div>
+        <div><strong>[X]%</strong><br>more projects delivered on time</div>
+      </div>
+
+      <div class="grid">
+        <figure class="card">
+          <blockquote>
+            <p>"We used to spend Monday mornings building status reports. Now FlowAI writes them and we spend that time actually shipping."</p>
+          </blockquote>
+          <figcaption>— [Name], Head of Product, [Startup]</figcaption>
+        </figure>
+        <figure class="card">
+          <blockquote>
+            <p>"The risk alerts caught a slipping milestone two weeks before we would have noticed. That alone paid for the tool."</p>
+          </blockquote>
+          <figcaption>— [Name], Engineering Manager, [Software Company]</figcaption>
+        </figure>
+        <figure class="card">
+          <blockquote>
+            <p>"Our meeting notes turn into assigned tasks automatically. Nothing falls through the cracks anymore."</p>
+          </blockquote>
+          <figcaption>— [Name], Operations Director, [Creative Agency]</figcaption>
+        </figure>
+      </div>
+
+      <p class="center" style="margin-top: 32px;">Trusted by teams at</p>
+      <div class="grid center">
+        <div class="card">[Logo]</div>
+        <div class="card">[Logo]</div>
+        <div class="card">[Logo]</div>
+        <div class="card">[Logo]</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PRICING ================= -->
+  <section id="pricing">
+    <div class="container">
+      <h2 class="center">Simple pricing that grows with your team</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Starter</h3>
+          <p><strong>$12</strong> per user / month</p>
+          <ul>
+            <li>Basic task management</li>
+            <li>Kanban boards</li>
+            <li>Team collaboration</li>
+            <li>Basic AI task suggestions</li>
+          </ul>
+          <a href="#cta">Start Free Trial</a>
+        </div>
+        <div class="card">
+          <p><em>Most popular</em></p>
+          <h3>Growth</h3>
+          <p><strong>$29</strong> per user / month</p>
+          <ul>
+            <li>Everything in Starter</li>
+            <li>AI workflow automation</li>
+            <li>AI project insights</li>
+            <li>Advanced reporting</li>
+            <li>Integrations with external tools</li>
+          </ul>
+          <a href="#cta">Start Free Trial</a>
+        </div>
+        <div class="card">
+          <h3>Enterprise</h3>
+          <p><strong>Custom</strong> pricing</p>
+          <ul>
+            <li>Everything in Growth</li>
+            <li>Advanced security &amp; compliance</li>
+            <li>Organisation-wide analytics</li>
+            <li>Custom AI models for workflows</li>
+            <li>Dedicated support</li>
+          </ul>
+          <a href="#">Contact Sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CALL TO ACTION ================= -->
+  <section id="cta">
+    <div class="container center">
+      <h2>Ready to let AI handle the busywork?</h2>
+      <p>Join teams who plan faster, catch risks earlier, and deliver on time with FlowAI.</p>
+      <form class="actions" onsubmit="return false;">
+        <label for="email" hidden>Work email</label>
+        <input type="email" id="email" name="email" placeholder="Enter your work email" required>
+        <button type="submit">Start Free Trial</button>
+      </form>
+      <p><small>Free trial · No credit card required · Cancel anytime</small></p>
+      <p>Need FlowAI for a large organisation? <a href="#">Talk to sales</a></p>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer>
+    <div class="container">
+      <div class="grid">
+        <div>
+          <strong>FlowAI</strong>
+          <p>AI-powered project management for teams that want to move faster.</p>
+        </div>
+        <div>
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#">Integrations</a></li>
+            <li><a href="#">Roadmap</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">Security</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="center"><small>&copy; 2026 FlowAI. All rights reserved.</small></p>
+    </div>
+  </footer>
+
+</body>
+</html>
