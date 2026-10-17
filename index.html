@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>document.documentElement.classList.add('js-ready');</script>
   <title>FlowAI – AI-Powered Project Management</title>
   <meta name="description" content="FlowAI is an AI-first project management platform that plans, automates, and predicts so your team can deliver faster.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -640,6 +641,40 @@
       border-top: 1px solid var(--border);
     }
 
+    /* ================= SCROLL REVEAL ================= */
+    .js-ready header > .container,
+    .js-ready section > .container,
+    .js-ready footer > .container {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+    .js-ready header > .container.is-visible,
+    .js-ready section > .container.is-visible,
+    .js-ready footer > .container.is-visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* Staggered cascade reveal for feature cards */
+    .js-ready #features .stagger .card {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+    }
+    .js-ready #features .stagger.is-visible .card { opacity: 1; transform: none; }
+    #features .stagger .card:nth-child(1) { transition-delay: 0s; }
+    #features .stagger .card:nth-child(2) { transition-delay: 0.15s; }
+    #features .stagger .card:nth-child(3) { transition-delay: 0.3s; }
+
+    /* Primary CTA pulse */
+    @keyframes cta-pulse {
+      0%, 85%, 100% { box-shadow: var(--shadow-accent); transform: scale(1); }
+      90% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.25), 0 0 0 16px rgba(59, 130, 246, 0.12); transform: scale(1.04); }
+    }
+    .cta-pulse { animation: cta-pulse 5s ease-in-out infinite; }
+    .cta-pulse:hover { animation-play-state: paused; }
+
     /* ================= RESPONSIVE ================= */
     @media (max-width: 900px) {
       .db-body { grid-template-columns: 1fr; }
@@ -659,8 +694,15 @@
       .db-legend { display: none; }
     }
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
-      .typewriter-cursor { animation: none !important; opacity: 1; }
+      *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
+      .typewriter-cursor { opacity: 1; }
+      .js-ready header > .container,
+      .js-ready section > .container,
+      .js-ready footer > .container,
+      .js-ready #features .stagger .card {
+        opacity: 1 !important;
+        transform: none !important;
+      }
     }
   </style>
 </head>
@@ -696,7 +738,7 @@
         delays before they happen, so your team spends less time coordinating and more time delivering.
       </p>
       <div class="actions">
-        <a class="btn btn-primary" href="#cta">Start Free Trial</a>
+        <a class="btn btn-primary cta-pulse" href="#cta">Start Free Trial</a>
         <a class="btn btn-secondary" href="#how-it-works">See How It Works</a>
       </div>
       <p><small>No credit card required · Connects with Slack, Google Workspace, GitHub &amp; Notion</small></p>
@@ -826,7 +868,7 @@
       <p class="center">AI isn't an add-on in FlowAI. It's the foundation every feature is built on.</p>
 
       <h3 class="eyebrow">Plan</h3>
-      <div class="grid">
+      <div class="grid stagger">
         <article class="card">
           <h4>AI Task Planner</h4>
           <p>Describe a goal and FlowAI breaks it into structured tasks and milestones automatically.</p>
@@ -842,7 +884,7 @@
       </div>
 
       <h3 class="eyebrow">Automate</h3>
-      <div class="grid">
+      <div class="grid stagger">
         <article class="card">
           <h4>Smart Workflow Automation</h4>
           <p>Hand off approvals, reminders, and status updates to FlowAI.</p>
@@ -858,7 +900,7 @@
       </div>
 
       <h3 class="eyebrow">Predict &amp; Track</h3>
-      <div class="grid">
+      <div class="grid stagger">
         <article class="card">
           <h4>AI Project Insights</h4>
           <p>Predictive analytics flag delays, risks, and bottlenecks before they derail delivery.</p>
@@ -870,7 +912,7 @@
       </div>
 
       <h3 class="eyebrow">Collaborate &amp; Connect</h3>
-      <div class="grid">
+      <div class="grid stagger">
         <article class="card">
           <h4>Team Collaboration Hub</h4>
           <p>Shared notes, discussions, and files in one place. No more hunting across tools.</p>
@@ -1233,6 +1275,30 @@
         }
       }
       setTimeout(type, 300);
+    })();
+
+    /* ---- Scroll reveal: sections fade/slide in, feature cards cascade ---- */
+    (function initScrollReveal() {
+      var targets = document.querySelectorAll(
+        'header > .container, section > .container, footer > .container, #features .stagger'
+      );
+      if (!targets.length) return;
+
+      if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+        targets.forEach(function (el) { el.classList.add('is-visible'); });
+        return;
+      }
+
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+
+      targets.forEach(function (el) { observer.observe(el); });
     })();
 
     /* ---- Count-up stats ---- */
